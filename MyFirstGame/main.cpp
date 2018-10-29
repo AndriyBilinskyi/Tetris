@@ -28,6 +28,11 @@ private:
             }
         }
     }
+
+    TetrisShape(TetrisShape& t){
+        throw "Tetris  Shape copy not allowed";
+    }
+
 public:
     int number;
     int sizeX;
@@ -154,14 +159,18 @@ public:
                 data = new bool[6]{1,0,1,1,0,1};
                 move();
                 heights = new int [4]{2,3,0,0};
-
+            default:
+                sizeX = 0;
+                sizeY = 0;
+                data = new bool[0]{};
+                heights = new int[0]{};
         }
 
     }
 
     ~TetrisShape(){
-        //delete heights;
-        //delete data;
+        delete heights;
+        delete data;
     }
 
     void draw(RenderWindow& window){
@@ -193,6 +202,10 @@ public:
 
 
 class TetrisContainer{
+private:
+    TetrisContainer(TetrisContainer& c){
+        throw "TetrisContainer copy not allowed";
+    }
 public:
     bool* data;
     bool& dataGet(int x, int y){
@@ -200,7 +213,7 @@ public:
     }
     long long sizeX;
     long long sizeY;
-    void addShape(TetrisShape shape,int x,int y){
+    void addShape(TetrisShape& shape,int x,int y){
         for(int xShape=0;xShape<shape.sizeX;xShape++) for(int yShape=0;yShape<shape.sizeY;yShape++)
             if(shape.dataGet(xShape,yShape)) dataGet(x+xShape,y+yShape)=true;
     }

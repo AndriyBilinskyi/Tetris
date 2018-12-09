@@ -33,6 +33,7 @@ private:
         throw "Tetris  Shape copy not allowed";
     }
 
+
 public:
     int number;
     int sizeX;
@@ -185,11 +186,11 @@ public:
         }
     }
 
-     const Vector2f& getPosition() {
-         return rectangles[0].getPosition();
+    const Vector2f& getPosition() {
+        return rectangles[0].getPosition();
     }
 
-     Vector2f getSize()  {
+    Vector2f getSize()  {
         return Vector2f(sizeX * recSize, sizeY * recSize);
     }
     void setPosition (float x, float y){
@@ -206,16 +207,45 @@ private:
     TetrisContainer(TetrisContainer& c){
         throw "TetrisContainer copy not allowed";
     }
-public:
-    bool* data;
-    bool& dataGet(int x, int y){
+    void recalculateHeights(TetrisShape& shape, int x,int y){
+        for(int i = x;i<x+sizeX;i++){
+            for(int j = y;j<y+sizeY;j++){
+                if(dataGet(i,j)){
+                    heights[i]=sizeY-j;
+                    break;
+                }
+            }
+        }
+    }
+
+    bool& dataGetInner(int x, int y){
         return data[x+y*sizeX];
     }
+public:
+
+    int* heights;
+    bool* data;
+
     long long sizeX;
     long long sizeY;
+
+    bool dataGet(int x, int y){
+        if(x<0  || x>=sizeX || y<0 || y>=sizeY) return true;
+        else return dataGetInner(x,y);
+    }
     void addShape(TetrisShape& shape,int x,int y){
         for(int xShape=0;xShape<shape.sizeX;xShape++) for(int yShape=0;yShape<shape.sizeY;yShape++)
-            if(shape.dataGet(xShape,yShape)) dataGet(x+xShape,y+yShape)=true;
+                if(shape.dataGet(xShape,yShape)) dataGetInner(x+xShape,y+yShape)=true;
+    }
+    bool checkIfShapeFits(TetrisShape& shape,int x, int y){
+        for(int i = x;i<x+shape.sizeX;i++){
+            for(int j = y;j<y+shape.sizeY;j++){
+                if(shape.dataGet(i-x, j-y) && dataGet(i,j)){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 
@@ -226,17 +256,23 @@ public:
         for(int i= 0 ; i<x*y;i++ ){
             data[i]=false;
         }
+        heights = new int[x];
+        for(int i = 0;i<x;i++){
+            heights[i]=0;
+        }
+
     }
     ~TetrisContainer(){
         delete data;
+        delete heights;
     }
 
     void draw(RenderWindow& window){
         for(long long x=0;x<sizeX;x++) for(auto y=0;y<sizeY;y++) if(dataGet(x,y)){
-            RectangleShape r(Vector2f(recSize,recSize));
-            r.setPosition(x*recSize, y*recSize);
-            window.draw(r);
-        }
+                    RectangleShape r(Vector2f(recSize,recSize));
+                    r.setPosition(x*recSize, y*recSize);
+                    window.draw(r);
+                }
     }
 };
 
@@ -266,6 +302,14 @@ int main(int, char const**)
     float initialSpeed = 0.1;
     float fallSpeed = 4.f;
     float speed = initialSpeed;
+    int x = 0;
+    int y = 0;
+
+    int nextX=x;
+    int nextY=y;
+    float nextYF=0;
+
+
 
 
 
@@ -308,6 +352,9 @@ int main(int, char const**)
             currentShape = new TetrisShape(i++);//rand() % 15
             if(i>14) i =0;
         }
+        x = llround(currentShape->getPosition().x/recSize);
+        y = llround(currentShape->getPosition().y/recSize);
+
 
         Event event;
         while (window.pollEvent(event))
@@ -326,13 +373,22 @@ int main(int, char const**)
             }
 
 
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Right
-            && currentShape->getPosition().x+currentShape->getSize().x<windowWidth) {
-                currentShape->move(recSize,0.f);
+            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Right) {
+                nextX=x+1;
+                if(container.checkIfShapeFits(*currentShape,nextX,nextY)){
+                    currentShape->move(recSize,0);
+                } else {
+                    nextX = x;
+                }
             }
 
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Left && currentShape->getPosition().x>0 ) {
-                currentShape->move(-recSize,0.f);
+            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Left) {
+                nextX=x-1;
+                if(container.checkIfShapeFits(*currentShape,nextX,nextY)){
+                    currentShape->move(-recSize,0);
+                } else {
+                    nextX = x;
+                }
             }
 
 
@@ -347,25 +403,27 @@ int main(int, char const**)
 
        // window.draw(text);
 
-       //window.draw(rectangle);
-       currentShape->draw(window);
-       container.draw(window);
+        //window.draw(rectangle);
+        currentShape->draw(window);
+        container.draw(window);
 
+        nextYF=currentShape->getPosition().y+speed;
+        nextY = llround(nextYF/recSize);
 
-       if(currentShape->getPosition().y+currentShape->getSize().y<windowHeight){
-           currentShape->move(0.f,speed);
-       } else {
-           container.addShape(*currentShape,llround(currentShape->getPosition().x/recSize), llround(currentShape->getPosition().y/recSize));
-           delete (currentShape);
-           currentShape = nullptr;
-           speed = initialSpeed;
-       }
+        if(container.checkIfShapeFits(*currentShape,nextX,nextY)){
+            currentShape->move(0.f,speed);
+        } else {
+            container.addShape(*currentShape,x,y);
+            delete (currentShape);
+            currentShape = nullptr;
+            speed = initialSpeed;
+        }
 
 
         window.display();
 
-       //auto windowHeight = window.getSize().y;
-       //std::cout << windowHeight << std::endl;
+        //auto windowHeight = window.getSize().y;
+        //std::cout << windowHeight << std::endl;
 
 
     }

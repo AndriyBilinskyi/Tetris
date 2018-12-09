@@ -38,10 +38,10 @@ public:
     int number;
     int sizeX;
     int sizeY;
-    int* heights;
     bool* data = nullptr;
 
     bool& dataGet(int x, int y){
+        if(x<0  || x>=sizeX || y<0 || y>=sizeY) throw "Tetris shape illegal index";
         return data[x+y*sizeX];
     }
 
@@ -59,118 +59,101 @@ public:
                 sizeX = 2;
                 sizeY = 2;
                 data = new bool[4]{1,1,1,1};
-                move();
-                heights = new int[4]{2,2,0,0};
+                
                 break;
             case 1:
                 sizeX = 4;
                 sizeY = 1;
                 data = new bool[4]{1,1,1,1};
-                move();
-                heights = new int[4]{1,1,1,1};
+                
                 break;
             case 2:
                 sizeX = 1;
                 sizeY = 4;
                 data = new bool[4]{1,1,1,1};
-                move();
-                heights = new int[4]{4,0,0,0};
+                
                 break;
             case 3:
 
                 sizeX = 3;
                 sizeY = 2;
                 data = new bool[6]{1,1,1,0,0,1};
-                move();
-                heights = new int[4]{1,1,2,0};
+                
                 break;
             case 4:
                 sizeX = 2;
                 sizeY = 3;
                 data = new bool[6]{1,1,1,0,1,0};
-                move();
-                heights = new int[4]{3,1,0,0};
+                
                 break;
             case 5:
                 sizeX = 3;
                 sizeY = 2;
                 data = new bool[6]{1,0,0,1,1,1};
-                move();
-                heights = new int[4]{2,2,2,0};
+                
                 break;
             case 6:
                 sizeX = 2;
                 sizeY = 3;
                 data = new bool[6]{0,1,0,1,1,1};
-                move();
-                heights = new int[4]{3,3,0,0};
+                
                 break;
             case 7:
                 sizeX = 3;
                 sizeY = 2;
                 data = new bool[6]{1,1,1,1,0,0};
-                move();
-                heights = new int[4]{2,1,1,0};
+                
                 break;
             case 8:
                 sizeX = 2;
                 sizeY = 3;
                 data = new bool[6]{1,1,0,1,0,1};
-                move();
-                heights = new int[4]{1,3,0,0};
+                
                 break;
             case 9:
                 sizeX = 3;
                 sizeY = 2;
                 data = new bool[6]{0,0,1,1,1,1};
-                move();
-                heights =new int[4]{2,2,2,0};
+                
                 break;
             case 10:
                 sizeX = 2;
                 sizeY = 3;
                 data = new bool[6]{1,0,1,0,1,1};
-                move();
-                heights = new int[4]{3,3,0,0};
+                
                 break;
             case 11:
                 sizeX = 3;
                 sizeY = 2;
                 data = new bool[6]{1,1,0,0,1,1};
-                move();
-                heights = new int[4]{1,2,2,0};
+                
                 break;
             case 12:
                 sizeX = 2;
                 sizeY = 3;
                 data = new bool[6]{0,1,1,1,1,0};
-                move();
-                heights = new int[4]{3,2,0,0};
+                
                 break;
             case 13:
                 sizeX = 3;
                 sizeY = 2;
                 data = new bool[6]{0,1,1,1,1,0};
-                move();
-                heights = new int[4]{2,2,1,0};
+                
                 break;
             case 14:
                 sizeX = 2;
                 sizeY = 3;
                 data = new bool[6]{1,0,1,1,0,1};
-                move();
-                heights = new int [4]{2,3,0,0};
+                
             default:
                 sizeX = 0;
                 sizeY = 0;
                 data = new bool[0]{};
-                heights = new int[0]{};
-        }
-
+        };
+        move();
     }
 
     ~TetrisShape(){
-        delete heights;
         delete data;
     }
 
@@ -207,23 +190,12 @@ private:
     TetrisContainer(TetrisContainer& c){
         throw "TetrisContainer copy not allowed";
     }
-    void recalculateHeights(TetrisShape& shape, int x,int y){
-        for(int i = x;i<x+sizeX;i++){
-            for(int j = y;j<y+sizeY;j++){
-                if(dataGet(i,j)){
-                    heights[i]=sizeY-j;
-                    break;
-                }
-            }
-        }
-    }
-
     bool& dataGetInner(int x, int y){
+        if(x<0  || x>=sizeX || y<0 || y>=sizeY) throw "TetrisContainer illegal index";
         return data[x+y*sizeX];
     }
 public:
 
-    int* heights;
     bool* data;
 
     long long sizeX;
@@ -256,15 +228,11 @@ public:
         for(int i= 0 ; i<x*y;i++ ){
             data[i]=false;
         }
-        heights = new int[x];
-        for(int i = 0;i<x;i++){
-            heights[i]=0;
-        }
+
 
     }
     ~TetrisContainer(){
         delete data;
-        delete heights;
     }
 
     void draw(RenderWindow& window){
@@ -315,10 +283,7 @@ int main(int, char const**)
 
     TetrisShape* currentShape = nullptr;
 
-    int heights[llround(window.getSize().x/recSize)];
-    for(auto& i:heights){
-        i = 0;
-    }
+
 
 
     int i = 0;
@@ -404,8 +369,7 @@ int main(int, char const**)
        // window.draw(text);
 
         //window.draw(rectangle);
-        currentShape->draw(window);
-        container.draw(window);
+
 
         nextYF=currentShape->getPosition().y+speed;
         nextY = llround(nextYF/recSize);
@@ -418,6 +382,10 @@ int main(int, char const**)
             currentShape = nullptr;
             speed = initialSpeed;
         }
+
+
+        currentShape->draw(window);
+        container.draw(window);
 
 
         window.display();

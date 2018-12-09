@@ -7,13 +7,14 @@
 
 using namespace sf;
 using namespace std;
-float recSize = 50.f;
+const float recSize = 50.f;
 
 
 
 class TetrisShape {
 private:
     RectangleShape rectangles [4];
+    Vector2f position = Vector2f(0.0f,0.0f);
 
     void move(int n, int x, int y){
         rectangles[n].move(x * recSize,y * recSize);
@@ -41,7 +42,9 @@ public:
     bool* data = nullptr;
 
     bool& dataGet(int x, int y){
-        if(x<0  || x>=sizeX || y<0 || y>=sizeY) throw "Tetris shape illegal index";
+        if(x<0  || x>=sizeX || y<0 || y>=sizeY){
+            throw "Tetris shape illegal index";
+        }
         return data[x+y*sizeX];
     }
 
@@ -144,11 +147,14 @@ public:
                 sizeX = 2;
                 sizeY = 3;
                 data = new bool[6]{1,0,1,1,0,1};
-                
+
+                break;
             default:
                 sizeX = 0;
                 sizeY = 0;
                 data = new bool[0]{};
+
+                break;
         };
         move();
     }
@@ -167,19 +173,12 @@ public:
         for(RectangleShape& rectangleShape:rectangles){
             rectangleShape.move(offsetX,offsetY);
         }
+        position.x+=offsetX;
+        position.y+=offsetY;
     }
 
     const Vector2f& getPosition() {
-        return rectangles[0].getPosition();
-    }
-
-    Vector2f getSize()  {
-        return Vector2f(sizeX * recSize, sizeY * recSize);
-    }
-    void setPosition (float x, float y){
-        for(RectangleShape rectangleShape:rectangles){
-            rectangleShape.setPosition(x,y);
-        }
+        return position;
     }
 
 };
@@ -191,7 +190,9 @@ private:
         throw "TetrisContainer copy not allowed";
     }
     bool& dataGetInner(int x, int y){
-        if(x<0  || x>=sizeX || y<0 || y>=sizeY) throw "TetrisContainer illegal index";
+        if(x<0  || x>=sizeX || y<0 || y>=sizeY){
+            throw "TetrisContainer illegal index";
+        }
         return data[x+y*sizeX];
     }
 public:
@@ -210,9 +211,9 @@ public:
                 if(shape.dataGet(xShape,yShape)) dataGetInner(x+xShape,y+yShape)=true;
     }
     bool checkIfShapeFits(TetrisShape& shape,int x, int y){
-        for(int i = x;i<x+shape.sizeX;i++){
-            for(int j = y;j<y+shape.sizeY;j++){
-                if(shape.dataGet(i-x, j-y) && dataGet(i,j)){
+        for(int i = 0;i<shape.sizeX;i++){
+            for(int j = 0;j<shape.sizeY;j++){
+                if(shape.dataGet(i, j) && dataGet(x+i,y+j)){
                     return false;
                 }
             }
@@ -242,7 +243,13 @@ public:
                     window.draw(r);
                 }
     }
+
+    static int floatToIntPerContainerGrid(float x){
+        return static_cast<int>(ceil(x/recSize));
+    }
 };
+
+
 
 
 int main(int, char const**)
@@ -253,7 +260,7 @@ int main(int, char const**)
     const float windowHeight = window.getSize().y + 0.f;
     const float windowWidth = window.getSize().x + 0.f;
 
-    TetrisContainer container( llround(windowWidth/recSize), llround(windowHeight/recSize));
+    TetrisContainer container( TetrisContainer::floatToIntPerContainerGrid(windowWidth), TetrisContainer::floatToIntPerContainerGrid(windowHeight));
 
     Image icon;
     if (!icon.loadFromFile(resourcePath() + "icon.png")) {
@@ -270,12 +277,9 @@ int main(int, char const**)
     float initialSpeed = 0.1;
     float fallSpeed = 4.f;
     float speed = initialSpeed;
-    int x = 0;
-    int y = 0;
 
-    int nextX=x;
-    int nextY=y;
-    float nextYF=0;
+
+
 
 
 
@@ -286,7 +290,12 @@ int main(int, char const**)
 
 
 
-    int i = 0;
+    int currentShapeNumber = 0;
+    // Create a graphical text to display
+    Font font;
+    if (!font.loadFromFile(resourcePath() + "sansation.ttf")) {
+        return EXIT_FAILURE;
+    }
     /*
     // Load a sprite to display
     Texture texture;
@@ -295,13 +304,8 @@ int main(int, char const**)
     }
     Sprite sprite(texture);
 
-    // Create a graphical text to display
-    Font font;
-    if (!font.loadFromFile(resourcePath() + "sansation.ttf")) {
-        return EXIT_FAILURE;
-    }
-    Text text("Hello SFML", font, 50);
-    text.setFillColor(Color::Black);
+
+
 
     Music music;
     if (!music.openFromFile(resourcePath() + "nice_music.ogg")) {
@@ -310,16 +314,28 @@ int main(int, char const**)
 
     music.play();
     */
+
     while (window.isOpen())
     {
 
-        if(currentShape== nullptr){
-            currentShape = new TetrisShape(i++);//rand() % 15
-            if(i>14) i =0;
-        }
-        x = llround(currentShape->getPosition().x/recSize);
-        y = llround(currentShape->getPosition().y/recSize);
+        //Text text("Shape # "+ to_string(currentShapeNumber), font, 50);
 
+        if(currentShape== nullptr){
+            currentShape = new TetrisShape(currentShapeNumber);//rand() % 15
+            currentShapeNumber++; if(currentShapeNumber>14) currentShapeNumber =0;
+        }
+
+
+
+
+        //text.setFillColor(Color::Blue);
+
+
+        int x = TetrisContainer::floatToIntPerContainerGrid(currentShape->getPosition().x);
+        int y = TetrisContainer::floatToIntPerContainerGrid(currentShape->getPosition().y);
+
+        int nextX=x;
+        int nextY=y;
 
         Event event;
         while (window.pollEvent(event))
@@ -342,6 +358,7 @@ int main(int, char const**)
                 nextX=x+1;
                 if(container.checkIfShapeFits(*currentShape,nextX,nextY)){
                     currentShape->move(recSize,0);
+                    x=nextX;
                 } else {
                     nextX = x;
                 }
@@ -351,6 +368,7 @@ int main(int, char const**)
                 nextX=x-1;
                 if(container.checkIfShapeFits(*currentShape,nextX,nextY)){
                     currentShape->move(-recSize,0);
+                    x=nextX;
                 } else {
                     nextX = x;
                 }
@@ -366,16 +384,17 @@ int main(int, char const**)
 
        // window.draw(sprite);
 
-       // window.draw(text);
+       //window.draw(text);
 
         //window.draw(rectangle);
 
 
-        nextYF=currentShape->getPosition().y+speed;
-        nextY = llround(nextYF/recSize);
+        float nextYF=currentShape->getPosition().y+speed;
+        nextY = TetrisContainer::floatToIntPerContainerGrid(nextYF);
 
         if(container.checkIfShapeFits(*currentShape,nextX,nextY)){
             currentShape->move(0.f,speed);
+            currentShape->draw(window);
         } else {
             container.addShape(*currentShape,x,y);
             delete (currentShape);
@@ -384,7 +403,6 @@ int main(int, char const**)
         }
 
 
-        currentShape->draw(window);
         container.draw(window);
 
 

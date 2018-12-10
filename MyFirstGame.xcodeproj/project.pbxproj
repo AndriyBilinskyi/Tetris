@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6907685A49CDEF1C6A8067C5 /* tetris.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 690765F8C625990610D4AE91 /* tetris.cpp */; };
 		959066A32177934C008C9DA8 /* ResourcePath.mm in Sources */ = {isa = PBXBuildFile; fileRef = 959066A22177934C008C9DA8 /* ResourcePath.mm */; };
 		959066A62177934C008C9DA8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 959066A52177934C008C9DA8 /* main.cpp */; };
 		959066A92177934C008C9DA8 /* cute_image.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 959066A82177934C008C9DA8 /* cute_image.jpg */; };
@@ -16,6 +17,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		690765F8C625990610D4AE91 /* tetris.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tetris.cpp; sourceTree = "<group>"; };
+		69076D9970091DAA1E59B4DA /* tetris.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tetris.hpp; sourceTree = "<group>"; };
 		9590669D2177934C008C9DA8 /* MyFirstGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyFirstGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		959066A12177934C008C9DA8 /* MyFirstGame-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MyFirstGame-Info.plist"; sourceTree = "<group>"; };
 		959066A22177934C008C9DA8 /* ResourcePath.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ResourcePath.mm; sourceTree = "<group>"; };
@@ -62,6 +65,8 @@
 				959066A52177934C008C9DA8 /* main.cpp */,
 				959066A72177934C008C9DA8 /* Resources */,
 				959066A02177934C008C9DA8 /* Supporting Files */,
+				69076D9970091DAA1E59B4DA /* tetris.hpp */,
+				690765F8C625990610D4AE91 /* tetris.cpp */,
 			);
 			path = MyFirstGame;
 			sourceTree = "<group>";
@@ -178,6 +183,7 @@
 			files = (
 				959066A62177934C008C9DA8 /* main.cpp in Sources */,
 				959066A32177934C008C9DA8 /* ResourcePath.mm in Sources */,
+				6907685A49CDEF1C6A8067C5 /* tetris.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

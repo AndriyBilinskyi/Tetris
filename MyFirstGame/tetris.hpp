@@ -11,21 +11,25 @@ private:
 
     TetrisShape(TetrisShape& t);
 
+    TetrisShape(TetrisShape* spateToRotate, int rotationDirection = 1);
+
 
 public:
     int number;
     int sizeX;
     int sizeY;
     bool* data = nullptr;
+    Color color;
 
     bool& dataGet(int x, int y);
 
-    TetrisShape(int n);
+    TetrisShape(int n, Color c);
 
     ~TetrisShape();
 
     void draw(RenderWindow& window);
     void move(float offsetX, float offsetY);
+    TetrisShape* transform();
 
     const Vector2f& getPosition();
 
@@ -35,18 +39,20 @@ public:
 class TetrisContainer{
 private:
     TetrisContainer(TetrisContainer& c);
-    bool& dataGetInner(int x, int y);
+    Color& dataGetInner(int x, int y);
 public:
 
     static const float recSize;
-    bool* data;
+    Color* data;
 
     long long sizeX;
     long long sizeY;
 
     bool dataGet(int x, int y);
     void addShape(TetrisShape& shape,int x,int y);
-    bool checkIfShapeFits(TetrisShape& shape,int x, int y);
+    bool  removeFilledRow();
+    bool checkIfShapeFits(TetrisShape* shape,int x, int y);
+    void moveContainer(int fromWhichRow);
 
 
     TetrisContainer(long long x, long long y);

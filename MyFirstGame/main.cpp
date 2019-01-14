@@ -15,7 +15,7 @@ int main(int, char const**)
     bool gameOver = false;
     srand (time(NULL));
     // Create the main window
-    RenderWindow window(VideoMode(800, 600), "SFML window");
+    RenderWindow window(VideoMode(400, 1000), "SFML window");
     const float windowHeight = window.getSize().y + 0.f;
     const float windowWidth = window.getSize().x + 0.f;
 
@@ -85,18 +85,22 @@ int main(int, char const**)
                 return  minBrightness + rand() % (256 - minBrightness);
             };
 
-            currentShape = new TetrisShape(currentShapeNumber,Color(getRandomColorComponent(), getRandomColorComponent(), getRandomColorComponent()));//rand() % 15
+            auto getRandomShapeNumber = []() -> int {
+                return rand() % (TetrisShape::NumberOfShapes+1);
+            };
+
+            currentShape = new TetrisShape(getRandomShapeNumber(),Color(getRandomColorComponent(), getRandomColorComponent(), getRandomColorComponent()));
             if(!container.checkIfShapeFits(currentShape, 0, 0)){
+
+                Text text("GAME OVER ", font, 50);
+                text.setFillColor(Color::White);
+                window.draw(text);
+                window.display();
                 gameOver = true;
 
             }
-            currentShapeNumber++; if(currentShapeNumber>18) currentShapeNumber =0;
+            //currentShapeNumber++; if(currentShapeNumber>18) currentShapeNumber =0;
         }
-
-
-
-
-        //text.setFillColor(Color::Blue);
 
 
         int x = TetrisContainer::floatToIntPerContainerGrid(currentShape->getPosition().x);
@@ -106,8 +110,7 @@ int main(int, char const**)
         int nextY=y;
 
         Event event;
-        while (window.pollEvent(event) && !gameOver)
-        {
+        while (window.pollEvent(event)) {
             // Close window: exit
             if (event.type == Event::Closed) {
                 window.close();
@@ -117,62 +120,54 @@ int main(int, char const**)
                 window.close();
             }
 
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Space) {
-                speed = fallSpeed;
-            }
 
+            if (!gameOver) {
 
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Right) {
-                nextX=x+1;
-                if(container.checkIfShapeFits(currentShape,nextX,nextY)){
-                    currentShape->move(TetrisContainer::recSize,0);
-                    x=nextX;
-                } else {
-                    nextX = x;
+                if (event.type == Event::KeyPressed && event.key.code == Keyboard::Space) {
+                    speed = fallSpeed;
                 }
-            }
 
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Left) {
-                nextX=x-1;
-                if(container.checkIfShapeFits(currentShape,nextX,nextY)){
-                    currentShape->move(-TetrisContainer::recSize,0);
-                    x=nextX;
-                } else {
-                    nextX = x;
+
+                if (event.type == Event::KeyPressed && event.key.code == Keyboard::Right) {
+                    nextX = x + 1;
+                    if (container.checkIfShapeFits(currentShape, nextX, nextY)) {
+                        currentShape->move(TetrisContainer::recSize, 0);
+                        x = nextX;
+                    } else {
+                        nextX = x;
+                    }
                 }
+
+                if (event.type == Event::KeyPressed && event.key.code == Keyboard::Left) {
+                    nextX = x - 1;
+                    if (container.checkIfShapeFits(currentShape, nextX, nextY)) {
+                        currentShape->move(-TetrisContainer::recSize, 0);
+                        x = nextX;
+                    } else {
+                        nextX = x;
+                    }
+                }
+
+                if (event.type == Event::KeyPressed && event.key.code == Keyboard::Up) {
+                    TetrisShape *shape = currentShape->transform();
+                    int xNew = TetrisContainer::floatToIntPerContainerGrid(shape->getPosition().x);
+                    int yNew = TetrisContainer::floatToIntPerContainerGrid(shape->getPosition().y);
+                    if (container.checkIfShapeFits(shape, xNew, yNew)) {
+                        delete currentShape;
+                        currentShape = shape;
+                        x = xNew;
+                        y = yNew;
+                    } else delete shape;
+                }
+
             }
-
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Up) {
-                TetrisShape* shape = currentShape->transform();
-                int xNew = TetrisContainer::floatToIntPerContainerGrid(shape->getPosition().x);
-                int yNew = TetrisContainer::floatToIntPerContainerGrid(shape->getPosition().y);
-                if(container.checkIfShapeFits(shape, xNew, yNew)){
-                    delete currentShape;
-                    currentShape = shape;
-                    x = xNew;
-                    y = yNew;
-                }else delete shape;
-            }
-
-
-
-
         }
-
-
-        window.clear();
-
-        if(gameOver){
-            Text text("GAME OVER ", font, 50);
-            window.draw(text);
-        }
-
-       // window.draw(sprite);
-
-
-
 
         if(!gameOver){
+
+            window.clear();
+
+
             float nextYF = currentShape->getPosition().y + speed;
             nextY = TetrisContainer::floatToIntPerContainerGrid(nextYF);
 
@@ -189,13 +184,13 @@ int main(int, char const**)
                 currentShape = nullptr;
                 speed = initialSpeed;
             }
+
+            container.draw(window);
+            window.display();
         }
 
 
-        container.draw(window);
 
-
-        window.display();
 
 
     }

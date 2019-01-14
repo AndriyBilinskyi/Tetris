@@ -33,6 +33,7 @@ public:
 
     const Vector2f& getPosition();
 
+    static const unsigned char NumberOfShapes;
 };
 
 

@@ -167,6 +167,9 @@ using namespace sf;
         move();
     }
 
+    const unsigned char TetrisShape::NumberOfShapes = 18;
+
+
     TetrisShape::~TetrisShape(){
         delete data;
     }
@@ -201,7 +204,7 @@ using namespace sf;
         }
         return data[x+y*sizeX];
     }
-    const float TetrisContainer::recSize = 40.f;
+    const float TetrisContainer::recSize = 50.f;
 
 
 
